@@ -100,10 +100,16 @@
               <a class="nav-link" href="/">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/movies">Movies</a>
+              <a class="nav-link" href="{% url 'movie_list' %}">Movies</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'about' %}">About Us</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'contact' %}">Contact Us</a>
             </li>
             <li class="nav-item">
               <form method="Post" action="{% url 'logout' %}">
@@ -124,6 +130,12 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'register' %}">Register</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'about' %}">About Us</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'contact' %}">Contact Us</a>
+            </li>
             {% endif %}
           </ul>
         </div>
@@ -135,7 +147,7 @@
       <div class="container">
         <div class="row">
           <div class="col-md-4 mb-4 mb-md-0">
-            <h5>About Us</h5>
+            <h5><a href="/about">About Us</a></h5>
             <p>
               We provide the best movie experience in town. Book your tickets
               now and enjoy the show!
@@ -147,7 +159,7 @@
               <li><a href="#">Home</a></li>
               <li><a href="#">Movies</a></li>
               <li><a href="#">Book Tickets</a></li>
-              <li><a href="#">Contact</a></li>
+              <li><a href="/contact">Contact</a></li>
             </ul>
           </div>
           <div class="col-md-4">

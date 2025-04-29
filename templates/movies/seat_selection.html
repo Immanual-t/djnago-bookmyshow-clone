@@ -1,32 +1,21 @@
-{% extends "users/basic.html" %} {% block content %}
+{% extends "users/basic.html" %}
+{% block content %}
 <div class="container mt-5">
   <div class="row">
     <div class="col-lg-8 mx-auto">
       <!-- Movie and Theater Info -->
       <div class="card mb-4">
         <div class="card-body">
-          <div
-            class="d-flex justify-content-between align-items-center flex-wrap"
-          >
+          <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div>
               <h4 class="card-title">{{ theaters.movie.name }}</h4>
-              <p class="card-text text-muted">
-                {{ theaters.name }} | {{ theaters.time }}
-              </p>
+              <p class="card-text text-muted">{{ theaters.name }} | {{ theaters.time }}</p>
             </div>
             <div class="mt-2 mt-sm-0">
-              <button class="btn btn-outline-primary me-2 mb-2 mb-sm-0">
-                2D
-              </button>
-              <button class="btn btn-outline-primary me-2 mb-2 mb-sm-0">
-                3D
-              </button>
-              <button class="btn btn-outline-primary mb-2 mb-sm-0">
-                IMAX 3D
-              </button>
-              <button class="btn btn-outline-primary mb-2 mb-sm-0">
-                {{seats|length}} Tickets
-              </button>
+              <button class="btn btn-outline-primary me-2 mb-2 mb-sm-0">2D</button>
+              <button class="btn btn-outline-primary me-2 mb-2 mb-sm-0">3D</button>
+              <button class="btn btn-outline-primary mb-2 mb-sm-0">IMAX 3D</button>
+              <button class="btn btn-outline-primary mb-2 mb-sm-0">{{seats|length}} Tickets</button>
             </div>
           </div>
         </div>
@@ -36,27 +25,37 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title text-center mb-4">Select Your Seats</h5>
-          <div class="screen">All eyes this way please!</div>
+
+          {% if is_housefull %}
+            <div class="alert alert-danger text-center">Housefull! No seats available.</div>
+          {% else %}
+            <div class="screen">All eyes this way please!</div>
+          {% endif %}
 
           <form method="POST">
             {% csrf_token %}
             <div class="d-flex justify-content-center flex-wrap mb-4">
               {% for seat in seats %}
-              <div class="seat {% if seat.is_booked %}sold{% endif %}">
-                {% if not seat.is_booked %}
-                <input
-                  type="checkbox"
-                  name="seats"
-                  value="{{ seat.id }}"
-                  class="d-none"
-                  id="seat-{{ seat.id }}"
-                />
-                <label
-                  for="seat-{{ seat.id }}"
-                  class="w-100 h-100 d-flex align-items-center justify-content-center"
-                  >{{ seat.seat_number }}</label
-                >
-                {% else %} {{ seat.seat_number }} {% endif %}
+              <div class="seat-wrapper">
+                <div class="seat {% if seat.is_booked %}sold{% endif %}">
+                  {% if not seat.is_booked and not is_housefull %}
+                  <input
+                    type="checkbox"
+                    name="seats"
+                    value="{{ seat.id }}"
+                    class="seat-checkbox d-none"
+                    id="seat-{{ seat.id }}"
+                  />
+                  <label
+                    for="seat-{{ seat.id }}"
+                    class="seat-label w-100 h-100 d-flex align-items-center justify-content-center"
+                  >
+                    {{ seat.seat_number }}
+                  </label>
+                  {% else %}
+                  {{ seat.seat_number }}
+                  {% endif %}
+                </div>
               </div>
               {% endfor %}
             </div>
@@ -79,7 +78,8 @@
 
             <!-- Book Button -->
             <div class="text-center">
-              <button type="submit" class="btn btn-success btn-lg">
+              <button type="submit" class="btn btn-success btn-lg"
+                {% if is_housefull %}disabled{% endif %}>
                 Book Selected Seats
               </button>
             </div>
@@ -89,9 +89,14 @@
     </div>
   </div>
 </div>
+
+<!-- CSS Styling -->
 <style>
   body {
     font-family: Arial, sans-serif;
+  }
+  .seat-wrapper {
+    position: relative;
   }
   .seat {
     width: 30px;
@@ -124,47 +129,33 @@
     line-height: 50px;
     color: #666;
   }
-  .footer {
-    background-color: #333;
-    color: #ccc;
-    padding: 20px 0;
-  }
-  .footer a {
-    color: #ccc;
-    text-decoration: none;
-  }
-  .footer a:hover {
-    text-decoration: underline;
-  }
-  .footer .col-md-2,
-  .footer .col-md-3 {
-    margin-bottom: 20px;
-  }
-  .footer .social-icons i {
-    font-size: 20px;
-    margin: 0 10px;
-  }
 </style>
-<!-- <h1>Seats for {{theater.name}} - {{theater.movie.name}}</h1>
-{% if error %}
-<p style="color:red;">{{error}}</p>
-{% endif %}
-<form method="POST">
-    {% csrf_token %}
-    <ul>
-        {% for seat in seats %}
-        <li>
-          Seats{{seat.seat_number}}:
-          {% if seat.is_booked %}
-          <strong>Booked seat {{seat.seat_number}}</strong>
-          {% else %}
-          <input type="checkbox" name="seats" value="{{seat.id}}">
-          <strong>Available seat {{seat.seat_number}}</strong>
-          {% endif%}
-        </li>
-        {% endfor %}
-      </ul>
-      <button type="submit">Book selected seats</button>
-</form> -->
 
+<!-- JavaScript to handle seat selection color change -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const checkboxes = document.querySelectorAll('.seat-checkbox');
+    const bookButton = document.querySelector('button[type="submit"]');
+
+    function updateButtonState() {
+      const anySelected = Array.from(checkboxes).some(cb => cb.checked);
+      bookButton.disabled = !anySelected;
+    }
+
+    checkboxes.forEach(function (checkbox) {
+      checkbox.addEventListener('change', function () {
+        const seatDiv = checkbox.parentElement;
+        if (checkbox.checked) {
+          seatDiv.classList.add('selected');
+        } else {
+          seatDiv.classList.remove('selected');
+        }
+        updateButtonState();
+      });
+    });
+
+    // Initial check when page loads
+    updateButtonState();
+  });
+</script>
 {% endblock %}
